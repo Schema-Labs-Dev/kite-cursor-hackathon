@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@theme {
+  /* ugly-mode palette */
+  --color-bone: #f2f2f2;        /* page background */
+  --color-bone-soft: #f7f7f7;   /* alt background */
+  --color-paper: #ffffff;       /* cards */
+  --color-ink: #000000;         /* text + dark cards */
+  --color-ink-soft: #1b1b1b;
+  --color-fog: #6e6e6e;
+  --color-fog-soft: #888888;
+  --color-hairline: rgba(0, 0, 0, 0.08);
+
+  /* the one pop — acid */
+  --color-acid: #c8ff00;
+  --color-acid-deep: #aee100;
+  --color-magenta: #fa00ff;
+  --color-iris: #2151ff;
+  --color-mint: #adff02;
+
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --radius-card: 24px;
+  --radius-card-lg: 32px;
+  --radius-pill: 999px;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  html {
+    scroll-behavior: smooth;
+    background: var(--color-bone);
+    overflow-x: hidden;
+  }
+  body {
+    background: var(--color-bone);
+    color: var(--color-ink);
+    font-family: var(--font-sans), Helvetica, Arial, sans-serif;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-bone);
+  }
+}
+
+/* Display utility — heavy, condensed-feeling uppercase */
+.font-display {
+  font-family: var(--font-display), Helvetica, Arial, sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.035em;
+  line-height: 0.88;
+}
+
+.font-display-tight {
+  font-family: var(--font-display), Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.045em;
+  line-height: 0.84;
+}
+
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+  font-feature-settings: "tnum", "zero";
+}
+
+/* Marquee */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track { animation: marquee 55s linear infinite; }
+
+/* Subtle float */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+.float-a { animation: float 9s ease-in-out infinite; }
+.float-b { animation: float 11s ease-in-out infinite; animation-delay: -2s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track, .float-a, .float-b { animation: none !important; }
+}

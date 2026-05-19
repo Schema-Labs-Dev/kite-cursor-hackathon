@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  walletAddress   String   @unique
+  basename        String?  @unique
+  displayName     String?
+  email           String?  @unique
+  phone           String?  @unique
+  avatarUrl       String?
+  pushToken       String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  contactsOwned   Contact[]      @relation("ContactOwner")
+  contactsAs      Contact[]      @relation("ContactTarget")
+  txsSent         Transaction[]  @relation("TxSender")
+  txsReceived     Transaction[]  @relation("TxRecipient")
+  notifications   Notification[]
+  invitesSent     Invite[]
+
+  @@index([walletAddress])
+  @@index([basename])
+}
+
+model Contact {
+  id            String   @id @default(cuid())
+  ownerId       String
+  owner         User     @relation("ContactOwner", fields: [ownerId], references: [id])
+
+  contactId     String?
+  contact       User?    @relation("ContactTarget", fields: [contactId], references: [id])
+
+  address       String?
+  phone         String?
+  nickname      String
+
+  createdAt     DateTime @default(now())
+
+  @@unique([ownerId, address])
+  @@unique([ownerId, contactId])
+  @@index([ownerId])
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  txHash        String   @unique
+  fromAddress   String
+  toAddress     String
+
+  fromUserId    String?
+  fromUser      User?    @relation("TxSender", fields: [fromUserId], references: [id])
+  toUserId      String?
+  toUser        User?    @relation("TxRecipient", fields: [toUserId], references: [id])
+
+  amount        String
+  token         String
+  txType        TxType   @default(TRANSFER)
+
+  memo          String?
+  blockNumber   Int
+  status        TxStatus @default(CONFIRMED)
+
+  createdAt     DateTime @default(now())
+
+  @@index([fromAddress])
+  @@index([toAddress])
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@index([createdAt])
+}
+
+enum TxType {
+  TRANSFER
+  TREASURY_DEPOSIT
+  TREASURY_WITHDRAW
+}
+
+enum TxStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  type        String
+  payload     Json
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, readAt])
+}
+
+model Invite {
+  id            String       @id @default(cuid())
+  senderId      String
+  sender        User         @relation(fields: [senderId], references: [id])
+
+  recipientPhone String?
+  recipientEmail String?
+
+  amount        String
+  status        InviteStatus @default(PENDING)
+  claimToken    String       @unique
+  expiresAt     DateTime
+
+  createdAt     DateTime     @default(now())
+  claimedAt     DateTime?
+
+  @@index([senderId])
+  @@index([recipientPhone])
+  @@index([recipientEmail])
+}
+
+enum InviteStatus {
+  PENDING
+  CLAIMED
+  EXPIRED
+  CANCELLED
+}
+
+model AuthNonce {
+  nonce     String   @id
+  address   String?
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([address])
+  @@index([expiresAt])
+}
+
+model IndexerCursor {
+  name      String   @id
+  lastBlock Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
